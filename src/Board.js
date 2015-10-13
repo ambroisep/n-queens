@@ -155,8 +155,10 @@
       var majorDiag = [];
       var rowIndex = 0;
       var colIndex = majorDiagonalColumnIndexAtFirstRow;
-      while (colIndex < board.length) {
-        majorDiag.push(board[rowIndex][colIndex]);
+      while (colIndex < board.length && rowIndex < board.length) {
+        if(colIndex >= 0) {
+          majorDiag.push(board[rowIndex][colIndex]);
+        }
         rowIndex++;
         colIndex++;
       }
@@ -167,7 +169,7 @@
     hasAnyMajorDiagonalConflicts: function() {
       var size = this.get('n');
       var result = false;
-      var i = 0;
+      var i = -size + 1;
       while (!result && i < size) {
         if (this.hasMajorDiagonalConflictAt(i)) {
           result = true
@@ -189,12 +191,13 @@
       var minorDiag = [];
       var rowIndex = 0;
       var colIndex = minorDiagonalColumnIndexAtFirstRow;
-      while (colIndex >= 0) {
-        minorDiag.push(board[rowIndex][colIndex]);
+      while (colIndex >= 0 && rowIndex < board.length) {
+        if(colIndex < board.length) {
+          minorDiag.push(board[rowIndex][colIndex]);
+        }
         rowIndex++;
         colIndex--;
       }
-      console.log(minorDiag);
       return this.itemHasConflict(minorDiag);
     },
 
@@ -203,7 +206,7 @@
       var size = this.get('n');
       var result = false;
       var i = 0;
-      while (!result && i < size) {
+      while (!result && i < 2 * size - 1) {
         if (this.hasMinorDiagonalConflictAt(i)) {
           result = true
         }
