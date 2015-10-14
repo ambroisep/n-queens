@@ -8,9 +8,9 @@
 
     initialize: function (params) {
       if (_.isUndefined(params) || _.isNull(params)) {
-        console.log('Good guess! But to use the Board() constructor, you must pass it an argument in one of the following formats:');
-        console.log('\t1. An object. To create an empty board of size n:\n\t\t{n: %c<num>%c} - Where %c<num> %cis the dimension of the (empty) board you wish to instantiate\n\t\t%cEXAMPLE: var board = new Board({n:5})', 'color: blue;', 'color: black;','color: blue;', 'color: black;', 'color: grey;');
-        console.log('\t2. An array of arrays (a matrix). To create a populated board of size n:\n\t\t[ [%c<val>%c,%c<val>%c,%c<val>%c...], [%c<val>%c,%c<val>%c,%c<val>%c...], [%c<val>%c,%c<val>%c,%c<val>%c...] ] - Where each %c<val>%c is whatever value you want at that location on the board\n\t\t%cEXAMPLE: var board = new Board([[1,0,0],[0,1,0],[0,0,1]])', 'color: blue;', 'color: black;','color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: grey;');
+        // console.log('Good guess! But to use the Board() constructor, you must pass it an argument in one of the following formats:');
+        // console.log('\t1. An object. To create an empty board of size n:\n\t\t{n: %c<num>%c} - Where %c<num> %cis the dimension of the (empty) board you wish to instantiate\n\t\t%cEXAMPLE: var board = new Board({n:5})', 'color: blue;', 'color: black;','color: blue;', 'color: black;', 'color: grey;');
+        // console.log('\t2. An array of arrays (a matrix). To create a populated board of size n:\n\t\t[ [%c<val>%c,%c<val>%c,%c<val>%c...], [%c<val>%c,%c<val>%c,%c<val>%c...], [%c<val>%c,%c<val>%c,%c<val>%c...] ] - Where each %c<val>%c is whatever value you want at that location on the board\n\t\t%cEXAMPLE: var board = new Board([[1,0,0],[0,1,0],[0,0,1]])', 'color: blue;', 'color: black;','color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: grey;');
       } else if (params.hasOwnProperty('n')) {
         this.set(makeEmptyMatrix(this.get('n')));
       } else {
@@ -72,30 +72,47 @@
     /*=========================================================================
     =                 TODO: fill in these Helper Functions                    =
     =========================================================================*/
+    
+    itemHasConflict: function(arr) {
+      var result = false;
+      var i = 0;
+      while (!result && i < arr.length) {
+        if (arr[i] === 1) {
+          var j = i + 1;
+          while (!result && j < arr.length) {
+            if (arr[i] === arr[j]) {
+              result = true
+            }
+            j++
+          }
+        }
+        i++;
+      }
+      return result;      
+    },
 
     // ROWS - run from left to right
     // --------------------------------------------------------------
     //
     // test if a specific row on this board contains a conflict
+
     hasRowConflictAt: function(rowIndex) {
-      var row = this.rows()[rowIndex];
-      var numberOccurences = _.reduce(row, function(a, b) { return a + b; });
-      return numberOccurences > 1; // fixme
+      var row = this.get(rowIndex);
+      return this.itemHasConflict(row);
     },
 
     // test if any rows on this board contain conflicts
     hasAnyRowConflicts: function() {
-      var result = false;
       var size = this.get('n');
-
+      var result = false;
       var i = 0;
       while (!result && i < size) {
         if (this.hasRowConflictAt(i)) {
-          result = true;
+          result = true
         }
         i++;
       }
-      return result; // fixme
+      return result;
     },
 
 
@@ -104,24 +121,25 @@
     // --------------------------------------------------------------
     //
     // test if a specific column on this board contains a conflict
+
     hasColConflictAt: function(colIndex) {
-      var matrix = this.rows();
-      var count = 0;
-      for (var i = 0; i < matrix.length; i++) {
-        count += matrix[i][colIndex];
-      }
-      return count > 1;
+      var board = this.rows();
+      var column = _.map(board, function(row) { return row[colIndex]; });
+      return this.itemHasConflict(column);
     },
 
     // test if any columns on this board contain conflicts
     hasAnyColConflicts: function() {
       var size = this.get('n');
-      for (var i = 0; i < size; i++) {
+      var result = false;
+      var i = 0;
+      while (!result && i < size) {
         if (this.hasColConflictAt(i)) {
-          return true;
+          result = true
         }
+        i++;
       }
-      return false;
+      return result;
     },
 
 
@@ -130,26 +148,34 @@
     // --------------------------------------------------------------
     //
     // test if a specific major diagonal on this board contains a conflict
+
     hasMajorDiagonalConflictAt: function(majorDiagonalColumnIndexAtFirstRow) {
-      var matrix = this.rows();
-      var count = 0;
-      for (var row = 0, col = majorDiagonalColumnIndexAtFirstRow; row < matrix.length && col < matrix.length; row++, col++) {
-        if(col >= 0) {
-          count += matrix[row][col];
+      var board = this.rows();
+      var majorDiag = [];
+      var rowIndex = 0;
+      var colIndex = majorDiagonalColumnIndexAtFirstRow;
+      while (colIndex < board.length && rowIndex < board.length) {
+        if(colIndex >= 0) {
+          majorDiag.push(board[rowIndex][colIndex]);
         }
-      } 
-      return count > 1;
+        rowIndex++;
+        colIndex++;
+      }
+      return this.itemHasConflict(majorDiag);
     },
 
     // test if any major diagonals on this board contain conflicts
     hasAnyMajorDiagonalConflicts: function() {
       var size = this.get('n');
-      for (var i = - size + 1 ; i < size; i++) {
+      var result = false;
+      var i = -size + 1;
+      while (!result && i < size) {
         if (this.hasMajorDiagonalConflictAt(i)) {
-          return true
+          result = true
         }
+        i++;
       }
-      return false;
+      return result;
     },
 
 
@@ -158,29 +184,35 @@
     // --------------------------------------------------------------
     //
     // test if a specific minor diagonal on this board contains a conflict
-    hasMinorDiagonalConflictAt: function(minorDiagonalColumnIndexAtFirstRow) {
-      var matrix = this.rows();
-      var count = 0;
-      for (var row = 0, col = minorDiagonalColumnIndexAtFirstRow; row < matrix.length && col >= 0; row++, col--) {
-        if (col < matrix.length) {
-          count += matrix[row][col];
-        }
-      }
 
-      return count > 1; // fixme
+    hasMinorDiagonalConflictAt: function(minorDiagonalColumnIndexAtFirstRow) {
+      var board = this.rows();
+      var minorDiag = [];
+      var rowIndex = 0;
+      var colIndex = minorDiagonalColumnIndexAtFirstRow;
+      while (colIndex >= 0 && rowIndex < board.length) {
+        if(colIndex < board.length) {
+          minorDiag.push(board[rowIndex][colIndex]);
+        }
+        rowIndex++;
+        colIndex--;
+      }
+      return this.itemHasConflict(minorDiag);
     },
 
     // test if any minor diagonals on this board contain conflicts
     hasAnyMinorDiagonalConflicts: function() {
-
       var size = this.get('n');
-      for(var col = 0; col < 2 * size - 1; col++) {
-        if(this.hasMinorDiagonalConflictAt(col)) {
-          return true;
+      var result = false;
+      var i = 0;
+      while (!result && i < 2 * size - 1) {
+        if (this.hasMinorDiagonalConflictAt(i)) {
+          result = true
         }
+        i++;
       }
-      return false; // fixme
-    },
+      return result;
+    }
 
     /*--------------------  End of Helper Functions  ---------------------*/
 
